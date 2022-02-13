@@ -35,11 +35,10 @@ def create_file_name(run_time, time_range='00H06H', package='SP1'):
     return file_name
 
 
-# Retrieve last 4 short-range forecast
+# Download last 4 short-range forecast
 run_times = get_n_dates_from()
 time_range = '00H06H'
 
-files = []
 for run_time in run_times:
     url = create_url(run_time, time_range)
     file_name = create_file_name(run_time, time_range)
