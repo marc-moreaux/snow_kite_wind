@@ -217,7 +217,7 @@ class Downloader():
 
 
 Downloader().delete_group()
-for i in range(6, 0, -1):
+for i in range(3, 0, -1):
     Downloader().download_group(i)
     Downloader().compress_group()
     Downloader().delete_group()
