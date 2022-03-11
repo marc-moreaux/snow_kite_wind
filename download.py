@@ -20,9 +20,17 @@ def append_component(h5f, component, arr):
             component, data=arr, compression="gzip", chunks=True, maxshape=shape)
     else:
         h5f[component].resize((h5f[component].shape[0] + arr.shape[0]), axis=0)
+        h5f[component][-arr.shape[0]:] = arr
 
 
 class Downloader():
+    '''Create and manage a 'winds.h5' file that has properties:
+        - dates
+        - temp(erature) at 2m.
+        - dir(ection) of wind at 10m.
+        - speed of wind at 10m.
+        - ground altitude
+    '''
     def __init__(self):
         # Define elements to download
         self.apiKey = 'eyJ4NXQiOiJZV0kxTTJZNE1qWTNOemsyTkRZeU5XTTRPV014TXpjek1UVmhNbU14T1RSa09ETXlOVEE0Tnc9PSIsImtpZCI6ImdhdGV3YXlfY2VydGlmaWNhdGVfYWxpYXMiLCJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJtYXJjLm1vcmVhdXhAY2FyYm9uLnN1cGVyIiwiYXBwbGljYXRpb24iOnsib3duZXIiOiJtYXJjLm1vcmVhdXgiLCJ0aWVyUXVvdGFUeXBlIjpudWxsLCJ0aWVyIjoiVW5saW1pdGVkIiwibmFtZSI6ImtpdGVfd2luZF9maW5kZXIiLCJpZCI6NzAzLCJ1dWlkIjoiNDAzZGJlN2YtMzJhOS00YzdiLTkzNjUtMTIzMzA2NDY1ZTRhIn0sImlzcyI6Imh0dHBzOlwvXC9wb3J0YWlsLWFwaS5tZXRlb2ZyYW5jZS5mcjo0NDNcL29hdXRoMlwvdG9rZW4iLCJ0aWVySW5mbyI6eyI1MFBlck1pbiI6eyJ0aWVyUXVvdGFUeXBlIjoicmVxdWVzdENvdW50IiwiZ3JhcGhRTE1heENvbXBsZXhpdHkiOjAsImdyYXBoUUxNYXhEZXB0aCI6MCwic3RvcE9uUXVvdGFSZWFjaCI6dHJ1ZSwic3Bpa2VBcnJlc3RMaW1pdCI6MCwic3Bpa2VBcnJlc3RVbml0Ijoic2VjIn19LCJrZXl0eXBlIjoiUFJPRFVDVElPTiIsInBlcm1pdHRlZFJlZmVyZXIiOiIiLCJzdWJzY3JpYmVkQVBJcyI6W3sic3Vic2NyaWJlclRlbmFudERvbWFpbiI6ImNhcmJvbi5zdXBlciIsIm5hbWUiOiJBUk9NRSIsImNvbnRleHQiOiJcL3B1YmxpY1wvYXJvbWVcLzEuMCIsInB1Ymxpc2hlciI6ImFkbWluX21mIiwidmVyc2lvbiI6IjEuMCIsInN1YnNjcmlwdGlvblRpZXIiOiI1MFBlck1pbiJ9XSwiZXhwIjoxNzM5NDYyODI4LCJwZXJtaXR0ZWRJUCI6IiIsImlhdCI6MTY0NDg1NDgyOCwianRpIjoiMmM2MGIxNjQtMTQwZC00MmIyLWE5YzMtMjE0YWQ2N2VkODBlIn0=.tv9VeD0Pn89Gx4eAnKxaFZmRYP1e_wwlu63DVPqGJU0Icwbntcl2vMuGZ01fEMwy38LhGbeCNKC3Nf_BHE7zDP3iSIoxjmeUKU4vIeL2FOyy3af5gZlHETqACgupKVIQ2IduW2b7m-VpMbqZXdYXk4L8l_W7Xuyyz-6ilzCeAj5JJfePbR-Vq-aRovRcKryMk7skqpP5Nq54k882aVAl0e4XTPxH8KQEAw8CpxtJVPqUefOcIyErEsf9usW7RzzQCsuODWMobRX5iOO4h9igKvGX1NhWW8Ay96blAQqbKHgOaTeGZ2QjK-DtTQZnpQJ8hI33jgdmQfyATf0NGMmdGw=='
@@ -150,6 +158,7 @@ class Downloader():
 
         # Check if there is enough files
         if len(files) != 12:
+            print(f'ERROR: There is {len(files)} files instead of 12 in "runs" directory')
             return
 
         # Check if dates already are in winds file
@@ -159,9 +168,10 @@ class Downloader():
             if 'dates' in h5f.keys():
                 for date in dates:
                     if date in h5f['dates']:
+                        print(f'ERROR: {date} is already in "winds.h5"')
                         return
 
-        print(f'adding {str(dates)}')
+        print(f'Adding {str(dates)}')
         # Open wind file and add runs
         with h5py.File('winds.h5','a') as h5f:
             for file, grb in zip(files, grbs):
@@ -217,9 +227,7 @@ class Downloader():
 
 
 Downloader().delete_group()
-for i in range(3, 0, -1):
+for i in [2, 1, 0]:
     Downloader().download_group(i)
     Downloader().compress_group()
     Downloader().delete_group()
-
-h5f = h5py.File('winds.h5', 'a')
